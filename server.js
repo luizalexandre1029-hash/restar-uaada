@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 app.use(express.static("public"));
 
 // Token de produção Mercado Pago
-const MERCADO_PAGO_ACCESS_TOKEN = "APP_USR-4827466187289619-101909-04966be877f2e94bf3cb388e2b251050-2926347711";
+const MERCADO_PAGO_ACCESS_TOKEN = "APP_USR-2703539769101891-101913-92def06cfd2c7a6fea465c1eeae4150c-702338274";
 const MERCADO_PAGO_API = "https://api.mercadopago.com/v1/payments";
 
 // Endpoint para gerar pagamento Pix
@@ -92,7 +92,7 @@ app.get("/check-status/:payment_id", async (req, res) => {
 app.post("/send-to-sheet", async (req, res) => {
     try {
         const response = await fetch(
-            "https://script.google.com/macros/s/AKfycbzDA6DctNyxOoPWji0zSnj_J6-fQ7l2PT7AY0T8vmkJEqN3tAlOF74022Yetm8QhRCA/exec",
+            "https://script.google.com/macros/s/AKfycbzfcE-4gp6H4x0Y0wwyiaYDrvZ_7KTgtx72bvMN77PC9qD0mF2TfNl62Is_S_w6AX9b/exec",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
