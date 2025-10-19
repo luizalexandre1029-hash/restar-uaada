@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pagamento - RESTART</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+
+        #qrCode {
+            margin: 20px;
+        }
+
+        #status {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Pagamento - Inscrição RESTART</h1>
+
+    <div id="loading">Gerando Pix...</div>
+
+    <div id="qrCode" style="display:none;">
+        <img id="qrImg" src="" alt="QR Code" />
+        <p>Código Copia e Cola:</p>
+        <textarea id="pixCode" rows="3" cols="40" readonly></textarea>
+    </div>
+
+    <div id="status"></div>
+
+    <script>
+        async function gerarPix() {
+            // Pega os dados do formulário do localStorage
+            const formData = localStorage.getItem('formData');
+            const usuario = formData ? JSON.parse(formData) : null;
+
+            if (!usuario || !usuario.nome || !usuario.email) {
+                alert("Erro: dados do formulário não encontrados. Volte e preencha novamente.");
+                document.getElementById("loading").textContent = "Erro: dados não encontrados.";
+                return;
+            }
+
+            try {
+                const resp = await fetch("http://localhost:3001/generate-pix", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(usuario)
+                });
+
+                const data = await resp.json();
+
+                if (resp.status !== 200 || !data.qr_code_base64) {
+                    console.error("Erro Mercado Pago:", data);
+                    alert("Erro ao gerar Pix. Veja console do servidor.");
+                    document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+                    return;
+                }
+
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("qrCode").style.display = "block";
+                document.getElementById("qrImg").src = "data:image/png;base64," + data.qr_code_base64;
+                document.getElementById("pixCode").value = data.qr_code;
+
+                verificarPagamento(data.id, usuario);
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao gerar Pix. Veja console do servidor.");
+                document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+            }
+        }
+
+        async function verificarPagamento(payment_id, usuario) {
+            const interval = setInterval(async () => {
+                try {
+                    const resp = await fetch(`http://localhost:3001/check-status/${payment_id}`);
+                    const data = await resp.json();
+
+                    if (data.status === "approved") {
+                        clearInterval(interval);
+                        document.getElementById("status").textContent = "🟩 Inscrição realizada com sucesso!";
+
+                        // Envia pro Google Sheets
+                        await fetch("http://localhost:3001/send-to-sheet", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(usuario)
+                        });
+
+                        // Limpa os dados do localStorage
+                        localStorage.removeItem('formData');
+
+                    } else {
+                        document.getElementById("status").textContent = `Aguardando pagamento... (${data.status})`;
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }, 3000);
+        }
+
+        // Gera o Pix assim que a página carrega
+        gerarPix();
+    </script>
+
+</body>
+
+</html>

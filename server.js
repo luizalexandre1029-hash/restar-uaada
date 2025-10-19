@@ -1,0 +1,95 @@
+import express from "express";
+import fetch from "node-fetch";
+import bodyParser from "body-parser";
+import cors from "cors";
+import { v4 as uuidv4 } from "uuid";  // Para X-Idempotency-Key
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static("public"));
+
+// Token de teste Mercado Pago
+const MERCADO_PAGO_ACCESS_TOKEN = "TEST-4827466187289619-101909-7470d127d4b7d0e493508b6def86f2aa-2926347711";
+const MERCADO_PAGO_API = "https://api.mercadopago.com/v1/payments";
+
+// Endpoint para gerar pagamento Pix
+app.post("/generate-pix", async (req, res) => {
+    try {
+        const { nome, email } = req.body;
+
+        const paymentData = {
+            transaction_amount: 0.02,
+            description: "Inscrição RESTART",
+            payment_method_id: "pix",
+            payer: { email }
+        };
+
+        const response = await fetch(MERCADO_PAGO_API, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
+                "Content-Type": "application/json",
+                "X-Idempotency-Key": uuidv4()  // ← Header obrigatório
+            },
+            body: JSON.stringify(paymentData)
+        });
+
+        const data = await response.json();
+        console.log("Resposta Mercado Pago completa:", JSON.stringify(data, null, 2));
+
+        if (data.point_of_interaction?.transaction_data) {
+            res.json({
+                id: data.id,
+                qr_code: data.point_of_interaction.transaction_data.qr_code,
+                qr_code_base64: data.point_of_interaction.transaction_data.qr_code_base64
+            });
+        } else {
+            res.status(400).json({ error: "QR Code não encontrado", details: data });
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao gerar Pix" });
+    }
+});
+
+// Endpoint para verificar status do pagamento
+app.get("/check-status/:payment_id", async (req, res) => {
+    const payment_id = req.params.payment_id;
+
+    try {
+        const response = await fetch(`${MERCADO_PAGO_API}/${payment_id}`, {
+            headers: { "Authorization": `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}` }
+        });
+
+        const data = await response.json();
+        res.json({ status: data.status });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao verificar status" });
+    }
+});
+
+// Endpoint para enviar dados para o Google Sheets
+app.post("/send-to-sheet", async (req, res) => {
+    try {
+        const response = await fetch(
+            "https://script.google.com/macros/s/AKfycbzDA6DctNyxOoPWji0zSnj_J6-fQ7l2PT7AY0T8vmkJEqN3tAlOF74022Yetm8QhRCA/exec",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(req.body)
+            }
+        );
+
+        const data = await response.text();
+        res.send(data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao enviar para planilha" });
+    }
+});
+
+const PORT = 3001;
+app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
