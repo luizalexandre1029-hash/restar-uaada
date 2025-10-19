@@ -92,7 +92,7 @@ app.get("/check-status/:payment_id", async (req, res) => {
 app.post("/send-to-sheet", async (req, res) => {
     try {
         const response = await fetch(
-            "https://script.google.com/macros/s/AKfycbzfcE-4gp6H4x0Y0wwyiaYDrvZ_7KTgtx72bvMN77PC9qD0mF2TfNl62Is_S_w6AX9b/exec",
+            "https://script.google.com/macros/s/AKfycbz42sRL4NjdvNSgg5itxp0wSn5GoLg6q203EfKevIqRoG-NLNI9BcbzA4NU0WW7Bt26/exec",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
