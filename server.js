@@ -9,20 +9,37 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// Token de teste Mercado Pago
-const MERCADO_PAGO_ACCESS_TOKEN = "TEST-4827466187289619-101909-7470d127d4b7d0e493508b6def86f2aa-2926347711";
+// Token de produção Mercado Pago
+const MERCADO_PAGO_ACCESS_TOKEN = "APP_USR-4827466187289619-101909-04966be877f2e94bf3cb388e2b251050-2926347711";
 const MERCADO_PAGO_API = "https://api.mercadopago.com/v1/payments";
 
 // Endpoint para gerar pagamento Pix
 app.post("/generate-pix", async (req, res) => {
     try {
-        const { nome, email } = req.body;
+        const { nome, email, cpf } = req.body;
+
+        if (!nome || !email || !cpf) {
+            return res.status(400).json({ error: "Dados incompletos do pagador" });
+        }
+
+        // Separar nome e sobrenome
+        const nomeSplit = nome.trim().split(" ");
+        const first_name = nomeSplit[0];
+        const last_name = nomeSplit.slice(1).join(" ") || "-";
 
         const paymentData = {
             transaction_amount: 0.02,
             description: "Inscrição RESTART",
             payment_method_id: "pix",
-            payer: { email }
+            payer: {
+                email,
+                first_name,
+                last_name,
+                identification: {
+                    type: "CPF",
+                    number: cpf
+                }
+            }
         };
 
         const response = await fetch(MERCADO_PAGO_API, {
@@ -30,7 +47,7 @@ app.post("/generate-pix", async (req, res) => {
             headers: {
                 "Authorization": `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
                 "Content-Type": "application/json",
-                "X-Idempotency-Key": uuidv4()  // ← Header obrigatório
+                "X-Idempotency-Key": uuidv4()  // Header obrigatório
             },
             body: JSON.stringify(paymentData)
         });

@@ -4,45 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <title>Pagamento - RESTART</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-        }
-
-        #qrCode {
-            margin: 20px;
-        }
-
-        #status {
-            font-weight: bold;
-            margin-top: 20px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="pagamento.css">
 </head>
 
 <body>
+    <div class="payment-container">
+        <h1>Pagamento - Inscrição RESTART</h1>
+        <p id="aviso"> VALOR 15,00</p>
 
-    <h1>Pagamento - Inscrição RESTART</h1>
+        <div id="loading">Gerando Pix... <div class="spinner"></div>
+        </div>
 
-    <div id="loading">Gerando Pix...</div>
+        <div id="qrCode">
+            <img id="qrImg" src="" alt="QR Code">
+            <p>Código Copia e Cola:</p>
+            <textarea id="pixCode" rows="3" readonly></textarea>
+            <button id="btnCopiar">Copiar Pix</button>
+        </div>
 
-    <div id="qrCode" style="display:none;">
-        <img id="qrImg" src="" alt="QR Code" />
-        <p>Código Copia e Cola:</p>
-        <textarea id="pixCode" rows="3" cols="40" readonly></textarea>
+        <div id="status"></div>
     </div>
-
-    <div id="status"></div>
 
     <script>
         async function gerarPix() {
-            // Pega os dados do formulário do localStorage
             const formData = localStorage.getItem('formData');
             const usuario = formData ? JSON.parse(formData) : null;
 
-            if (!usuario || !usuario.nome || !usuario.email) {
+            if (!usuario || !usuario.nome || !usuario.email || !usuario.cpf) {
                 alert("Erro: dados do formulário não encontrados. Volte e preencha novamente.");
                 document.getElementById("loading").textContent = "Erro: dados não encontrados.";
                 return;
@@ -73,7 +62,6 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Erro ao gerar Pix. Veja console do servidor.");
                 document.getElementById("loading").textContent = "Erro ao gerar Pix.";
             }
         }
@@ -88,14 +76,12 @@
                         clearInterval(interval);
                         document.getElementById("status").textContent = "🟩 Inscrição realizada com sucesso!";
 
-                        // Envia pro Google Sheets
                         await fetch("http://localhost:3001/send-to-sheet", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(usuario)
                         });
 
-                        // Limpa os dados do localStorage
                         localStorage.removeItem('formData');
 
                     } else {
@@ -107,10 +93,20 @@
             }, 3000);
         }
 
-        // Gera o Pix assim que a página carrega
+        document.getElementById("btnCopiar").addEventListener("click", () => {
+            const pixCode = document.getElementById("pixCode");
+            pixCode.select();
+            pixCode.setSelectionRange(0, 99999);
+            try {
+                document.execCommand("copy");
+                alert("Pix copiado para a área de transferência!");
+            } catch (err) {
+                console.error("Erro ao copiar:", err);
+            }
+        });
+
         gerarPix();
     </script>
-
 </body>
 
 </html>

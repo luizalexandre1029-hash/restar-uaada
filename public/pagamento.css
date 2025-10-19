@@ -1,86 +1,120 @@
-/* Reset básico */
-* {
+body {
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
-}
-
-body.pagamento {
-    background: #f5f5f5;
-    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    background: radial-gradient(circle at top, #1A2F4B, #000);
+    color: #fff;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 20px;
+    align-items: center;
 }
 
-.container {
-    background: #fff;
-    border-radius: 12px;
-    padding: 30px;
-    width: 100%;
-    max-width: 500px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+.payment-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+    width: 90%;
+    max-width: 400px;
     text-align: center;
 }
 
-h1 {
-    font-size: 28px;
+.payment-container h1 {
+    font-size: 32px;
+    color: #e7c25e;
     margin-bottom: 20px;
-    color: #2a2a2a;
 }
 
-#payment-info p {
-    font-size: 16px;
-    margin: 8px 0;
-}
-
-#payment-area {
-    margin-top: 20px;
-}
-
-#payment-area a {
-    text-decoration: none;
-}
-
-#btn-pagar {
-    background-color: #ff7f50;
-    /* coral */
-    color: #fff;
-    border: none;
-    padding: 15px 30px;
-    font-size: 16px;
+#aviso {
+    color: #00ff9d;
     font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-    margin-top: 10px;
-}
-
-#btn-pagar:hover {
-    background-color: #ff5722;
-}
-
-#status {
-    margin-top: 20px;
-    font-weight: bold;
-    font-size: 15px;
-    color: #555;
+    margin-bottom: 20px;
 }
 
 #loading {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* QR Code */
+#qrCode {
+    display: none;
     margin-top: 20px;
 }
 
+#qrImg {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+textarea#pixCode {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    resize: none;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+
+#btnCopiar {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #00ff9d, #00b3ff);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-bottom: 20px;
+}
+
+#btnCopiar:hover {
+    transform: scale(1.05);
+}
+
+#status {
+    font-weight: bold;
+    margin-top: 15px;
+    font-size: 16px;
+    color: #00b3ff;
+}
+
+/* Botão (se precisar de algum) */
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    background: linear-gradient(90deg, #00ff9d, #00b3ff);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+/* Spinner */
 .spinner {
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #ff7f50;
-    border-radius: 50%;
+    margin: 20px auto;
     width: 40px;
     height: 40px;
-    margin: 0 auto;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #00ff9d;
+    border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
@@ -94,17 +128,16 @@ h1 {
     }
 }
 
-textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    resize: none;
-    margin-top: 8px;
-}
+@media (max-width: 400px) {
+    .payment-container {
+        padding: 20px;
+    }
 
-.qrimg {
-    width: 200px;
-    height: 200px;
-    margin-top: 15px;
+    .payment-container h1 {
+        font-size: 28px;
+    }
+
+    textarea#pixCode {
+        font-size: 12px;
+    }
 }

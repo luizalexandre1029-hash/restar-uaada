@@ -3,76 +3,49 @@
 body {
     margin: 0;
     font-family: 'Montserrat', sans-serif;
-    /* Ajuste o gradiente para ficar mais próximo da imagem */
-    background: radial-gradient(circle at top, #1A2F4B, #000); /* Cores ajustadas para simular o da imagem */
+    background: radial-gradient(circle at top, #1A2F4B, #000);
     color: #fff;
-    min-height: 100vh; /* Garante que o body ocupa a altura total da viewport */
-    display: flex; /* Para centralizar verticalmente */
-    justify-content: center; /* Para centralizar horizontalmente */
-    align-items: center; /* Para centralizar verticalmente */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* centraliza textos */
 }
-
-/* --- Página Inicial --- */
 
 .home .container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    /* centraliza verticalmente */
     text-align: center;
-    padding: 20px 20px 40px 20px; /* Ajuste o padding se necessário */
-    justify-content: space-between; /* Distribui o espaço entre os itens */
-    min-height: 90vh; /* Para distribuir melhor os elementos na tela */
+    padding: 20px;
+    gap: 20px;
+    /* espaço entre elementos */
 }
 
 .data {
-    font-size: 30px; /* Um pouco menor para se ajustar ao layout */
-    margin-bottom: 20px; /* Espaçamento abaixo da data */
+    font-size: 30px;
     font-weight: bold;
-    align-self: flex-start; /* Alinha a data à esquerda */
-    margin-left: 10%; /* Ajuste a margem para alinhar com "29 NOV" da imagem */
-    margin-top: 0; /* Remove margem superior */
+    margin: 0;
+    text-align: center;
+    /* centraliza a data */
 }
 
 .image-wrapper {
-    position: relative;
     max-width: 400px;
     width: 90%;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    /* centraliza a imagem */
 }
 
 .casal {
-    max-width: 100%; /* Garante que a imagem se ajusta ao wrapper */
+    max-width: 100%;
     height: auto;
-    display: block; /* Remove espaço extra abaixo da imagem */
-}
-
-.names-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Alinha os nomes no topo da imagem */
-    padding: 10% 8%; /* Ajusta o padding para posicionar os nomes */
-    box-sizing: border-box;
-    pointer-events: none; /* Permite clicar na imagem por baixo */
-}
-
-.name {
-    font-size: 14px; /* Tamanho da fonte para os nomes */
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.7); /* Adiciona sombra para destacar */
-}
-
-.name.left {
-    text-align: left;
-}
-
-.name.right {
-    text-align: right;
+    display: block;
 }
 
 .titulo {
@@ -103,75 +76,47 @@ body {
     transform: scale(1.05);
 }
 
-/* --- Página de Inscrição --- */
-.inscricao .form-container {
-    max-width: 400px;
-    margin: 100px auto;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 30px;
-    border-radius: 15px;
-    text-align: left;
-}
-
-.inscricao h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.inscricao label {
-    display: block;
-    margin-top: 15px;
-    font-size: 15px;
-}
-
-.inscricao input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: none;
-    border-radius: 8px;
-}
-
-/* Spinner de carregamento */
-.spinner {
-    margin: 0 auto;
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid #00ff9d;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-.inscricao button {
-    width: 100%;
-    background: linear-gradient(90deg, #00ff9d, #00b3ff);
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
+.scroll-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 20px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
+    gap: 5px;
 }
 
-.inscricao button:hover {
-    transform: scale(1.05);
+.scroll-indicator i {
+    font-size: 20px;
+    animation: bounce 1.5s infinite;
 }
 
-#mensagem {
-    text-align: center;
-    margin-top: 15px;
-    font-weight: bold;
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(10px);
+    }
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+    .titulo {
+        font-size: 50px;
+    }
+
+    .subtitulo {
+        font-size: 20px;
+    }
+
+    .botao {
+        font-size: 18px;
+        padding: 12px 30px;
+    }
+
+    .data {
+        font-size: 24px;
+    }
 }
