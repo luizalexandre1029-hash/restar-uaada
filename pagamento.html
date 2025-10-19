@@ -120,6 +120,41 @@
     <title>Pagamento - RESTART</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/pagamento.css">
+    <style>
+        /* Spinner simples */
+        #loading {
+            display: none;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #555;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #qrCode {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -148,22 +183,30 @@
             if (!usuario || !usuario.nome || !usuario.email || !usuario.cpf) {
                 alert("Erro: dados do formulário não encontrados. Volte e preencha novamente.");
                 document.getElementById("loading").textContent = "Erro: dados não encontrados.";
+                document.getElementById("loading").style.display = "block";
                 return;
             }
 
             document.getElementById("loading").style.display = "block";
 
             try {
-                const resp = await fetch("/generate-pix", {
+                const resp = await fetch("/api/generate-pix", {  // <- ajustado para /api
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(usuario)
                 });
 
+                if (!resp.ok) {
+                    const errorData = await resp.json().catch(() => ({}));
+                    console.error("Erro Mercado Pago:", errorData);
+                    document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+                    return;
+                }
+
                 const data = await resp.json();
 
-                if (resp.status !== 200 || !data.qr_code_base64) {
-                    console.error("Erro Mercado Pago:", data);
+                if (!data.qr_code_base64) {
+                    console.error("QR Code não recebido:", data);
                     document.getElementById("loading").textContent = "Erro ao gerar Pix.";
                     return;
                 }
@@ -184,14 +227,14 @@
         async function verificarPagamento(payment_id, usuario) {
             const interval = setInterval(async () => {
                 try {
-                    const resp = await fetch(`/check-status/${payment_id}`);
+                    const resp = await fetch(`/api/check-status/${payment_id}`); // <- ajustado para /api
                     const data = await resp.json();
 
                     if (data.status === "approved") {
                         clearInterval(interval);
                         document.getElementById("status").textContent = "🟩 Inscrição realizada com sucesso!";
 
-                        await fetch("/send-to-sheet", {
+                        await fetch("/api/send-to-sheet", {  // <- ajustado para /api
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(usuario)
@@ -203,6 +246,7 @@
                     }
                 } catch (err) {
                     console.error(err);
+                    document.getElementById("status").textContent = "Erro ao verificar pagamento.";
                 }
             }, 3000);
         }
