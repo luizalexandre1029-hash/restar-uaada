@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -84,6 +84,120 @@
 
                         localStorage.removeItem('formData');
 
+                    } else {
+                        document.getElementById("status").textContent = `Aguardando pagamento... (${data.status})`;
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }, 3000);
+        }
+
+        document.getElementById("btnCopiar").addEventListener("click", () => {
+            const pixCode = document.getElementById("pixCode");
+            pixCode.select();
+            pixCode.setSelectionRange(0, 99999);
+            try {
+                document.execCommand("copy");
+                alert("Pix copiado para a área de transferência!");
+            } catch (err) {
+                console.error("Erro ao copiar:", err);
+            }
+        });
+
+        gerarPix();
+    </script>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pagamento - RESTART</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/pagamento.css">
+</head>
+
+<body>
+    <div class="payment-container">
+        <h1>Pagamento - Inscrição RESTART</h1>
+        <p id="aviso">VALOR R$10,00</p>
+
+        <div id="loading">Gerando Pix... <div class="spinner"></div>
+        </div>
+
+        <div id="qrCode">
+            <img id="qrImg" src="" alt="QR Code">
+            <p>Código Copia e Cola:</p>
+            <textarea id="pixCode" rows="3" readonly></textarea>
+            <button id="btnCopiar">Copiar Pix</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function gerarPix() {
+            const formData = localStorage.getItem('formData');
+            const usuario = formData ? JSON.parse(formData) : null;
+
+            if (!usuario || !usuario.nome || !usuario.email || !usuario.cpf) {
+                alert("Erro: dados do formulário não encontrados. Volte e preencha novamente.");
+                document.getElementById("loading").textContent = "Erro: dados não encontrados.";
+                return;
+            }
+
+            document.getElementById("loading").style.display = "block";
+
+            try {
+                const resp = await fetch("/generate-pix", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(usuario)
+                });
+
+                const data = await resp.json();
+
+                if (resp.status !== 200 || !data.qr_code_base64) {
+                    console.error("Erro Mercado Pago:", data);
+                    document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+                    return;
+                }
+
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("qrCode").style.display = "block";
+                document.getElementById("qrImg").src = "data:image/png;base64," + data.qr_code_base64;
+                document.getElementById("pixCode").value = data.qr_code;
+
+                verificarPagamento(data.id, usuario);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+            }
+        }
+
+        async function verificarPagamento(payment_id, usuario) {
+            const interval = setInterval(async () => {
+                try {
+                    const resp = await fetch(`/check-status/${payment_id}`);
+                    const data = await resp.json();
+
+                    if (data.status === "approved") {
+                        clearInterval(interval);
+                        document.getElementById("status").textContent = "🟩 Inscrição realizada com sucesso!";
+
+                        await fetch("/send-to-sheet", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(usuario)
+                        });
+
+                        localStorage.removeItem('formData');
                     } else {
                         document.getElementById("status").textContent = `Aguardando pagamento... (${data.status})`;
                     }
