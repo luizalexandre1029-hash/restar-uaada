@@ -11,70 +11,71 @@ body {
 
 .payment-container {
     background: rgba(255, 255, 255, 0.05);
-    padding: 40px;
+    padding: clamp(20px, 5vw, 40px);
     border-radius: 20px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
     width: 90%;
     max-width: 400px;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .payment-container h1 {
-    font-size: 32px;
+    font-size: clamp(24px, 6vw, 32px);
     color: #e7c25e;
-    margin-bottom: 20px;
+    margin-bottom: clamp(15px, 3vw, 20px);
 }
 
 #aviso {
     color: #00ff9d;
     font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: clamp(15px, 3vw, 20px);
+    font-size: clamp(14px, 4vw, 16px);
 }
 
 #loading {
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-size: clamp(14px, 4vw, 18px);
+    margin-bottom: clamp(15px, 3vw, 20px);
 }
 
 /* QR Code */
 #qrCode {
     display: none;
-    margin-top: 20px;
+    margin-top: clamp(15px, 3vw, 20px);
 }
 
 #qrImg {
     max-width: 100%;
     height: auto;
     border-radius: 12px;
-    margin-bottom: 15px;
+    margin-bottom: clamp(10px, 2vw, 15px);
 }
 
 textarea#pixCode {
     width: 100%;
-    padding: 12px;
+    padding: clamp(8px, 2vw, 12px);
     border-radius: 10px;
     border: none;
-    font-size: 14px;
+    font-size: clamp(12px, 3vw, 14px);
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
     resize: none;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: clamp(15px, 3vw, 20px);
 }
-
 
 #btnCopiar {
     width: 100%;
-    padding: 12px;
+    padding: clamp(10px, 3vw, 12px);
     background: linear-gradient(90deg, #00ff9d, #00b3ff);
     border: none;
     border-radius: 12px;
     color: #fff;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
-    margin-bottom: 20px;
+    margin-bottom: clamp(15px, 3vw, 20px);
 }
 
 #btnCopiar:hover {
@@ -83,21 +84,21 @@ textarea#pixCode {
 
 #status {
     font-weight: bold;
-    margin-top: 15px;
-    font-size: 16px;
+    margin-top: clamp(10px, 2vw, 15px);
+    font-size: clamp(14px, 3vw, 16px);
     color: #00b3ff;
 }
 
 /* Botão (se precisar de algum) */
 button {
     width: 100%;
-    padding: 15px;
-    margin-top: 15px;
+    padding: clamp(12px, 3vw, 15px);
+    margin-top: clamp(10px, 2vw, 15px);
     background: linear-gradient(90deg, #00ff9d, #00b3ff);
     border: none;
     border-radius: 12px;
     color: #fff;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
@@ -128,16 +129,23 @@ button:hover {
     }
 }
 
+/* Media queries extras para celulares pequenos */
 @media (max-width: 400px) {
     .payment-container {
-        padding: 20px;
+        padding: 15px;
     }
 
     .payment-container h1 {
-        font-size: 28px;
+        font-size: 24px;
     }
 
     textarea#pixCode {
         font-size: 12px;
+    }
+
+    #btnCopiar,
+    button {
+        font-size: 14px;
+        padding: 10px;
     }
 }
