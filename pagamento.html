@@ -156,26 +156,26 @@
 
     <script>
         // ===========================
-        // 🟡 Função para checar vagas
+        // 🟡 Checar vagas disponíveis
         // ===========================
         async function checarVagas() {
             try {
-                const resp = await fetch("/api/status");
+                const resp = await fetch("/api/pagamento/status");
                 const data = await resp.json();
 
                 if (data.vagasRestantes <= 0) {
                     document.body.innerHTML = `
-                        <div class="payment-container">
-                            <h1>Inscrições Esgotadas</h1>
-                            <p style="color:red; font-size:1.3em;">
-                                Inscrições para o primeiro lote esgotadas.
-                            </p>
-                        </div>`;
+            <div class="payment-container">
+              <h1>Inscrições Esgotadas</h1>
+              <p style="color:red; font-size:1.3em;">
+                Inscrições para o primeiro lote esgotadas.
+              </p>
+            </div>`;
                     return false;
                 }
 
                 document.getElementById("vagas").textContent =
-                    `Vagas disponíveis: ${data.vagasRestantes}`;
+                    "Vagas disponíveis: " + data.vagasRestantes;
                 return true;
 
             } catch (err) {
@@ -202,20 +202,19 @@
             document.getElementById("loading").style.display = "block";
 
             try {
-                const resp = await fetch("/api/generate-pix", {
+                const resp = await fetch("/api/pagamento/generate-pix", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(usuario)
                 });
 
-                // Se as inscrições acabaram
                 if (resp.status === 403) {
                     const data = await resp.json();
                     document.body.innerHTML = `
-                        <div class="payment-container">
-                            <h1>Inscrições Esgotadas</h1>
-                            <p style="color:red; font-size:1.3em;">${data.error}</p>
-                        </div>`;
+            <div class="payment-container">
+              <h1>Inscrições Esgotadas</h1>
+              <p style="color:red; font-size:1.3em;">${data.error}</p>
+            </div>`;
                     return;
                 }
 
@@ -253,24 +252,24 @@
         async function verificarPagamento(payment_id, usuario) {
             const interval = setInterval(async () => {
                 try {
-                    const resp = await fetch(`/api/check-status/${payment_id}`);
+                    const resp = await fetch("/api/pagamento/check-status/" + payment_id);
                     const data = await resp.json();
 
                     if (data.status === "approved") {
                         clearInterval(interval);
                         document.getElementById("status").textContent = "🟩 Inscrição realizada com sucesso!";
 
-                        await fetch("/api/send-to-sheet", {
+                        await fetch("/api/pagamento/send-to-sheet", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(usuario)
                         });
 
                         localStorage.removeItem('formData');
-                        checarVagas(); // atualiza vagas disponíveis
+                        checarVagas();
                     } else {
                         document.getElementById("status").textContent =
-                            `Aguardando pagamento... (${data.status})`;
+                            "Aguardando pagamento... (" + data.status + ")";
                     }
                 } catch (err) {
                     console.error(err);
