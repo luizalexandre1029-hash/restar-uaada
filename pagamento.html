@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -115,6 +115,192 @@
         });
 
         gerarPix();
+    </script>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento - RESTART</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/pagamento.css">
+</head>
+
+<body>
+    <div class="payment-container">
+        <h1>Pagamento - Inscrição RESTART</h1>
+
+        <p id="aviso">VALOR R$10,00</p>
+        <p id="vagas">Carregando vagas...</p>
+
+        <div id="loading" style="display:none;">
+            Gerando Pix...
+            <div class="spinner"></div>
+        </div>
+
+        <div id="qrCode" style="display:none;">
+            <img id="qrImg" src="" alt="QR Code">
+            <p>Código Copia e Cola:</p>
+            <textarea id="pixCode" rows="3" readonly></textarea>
+            <button id="btnCopiar">Copiar Pix</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // ===========================
+        // 🟡 Função para checar vagas
+        // ===========================
+        async function checarVagas() {
+            try {
+                const resp = await fetch("/api/status");
+                const data = await resp.json();
+
+                if (data.vagasRestantes <= 0) {
+                    document.body.innerHTML = `
+                        <div class="payment-container">
+                            <h1>Inscrições Esgotadas</h1>
+                            <p style="color:red; font-size:1.3em;">
+                                Inscrições para o primeiro lote esgotadas.
+                            </p>
+                        </div>`;
+                    return false;
+                }
+
+                document.getElementById("vagas").textContent =
+                    `Vagas disponíveis: ${data.vagasRestantes}`;
+                return true;
+
+            } catch (err) {
+                console.error("Erro ao checar vagas:", err);
+                document.getElementById("vagas").textContent = "Erro ao carregar vagas.";
+                return false;
+            }
+        }
+
+        // ===========================
+        // 🟢 Gerar PIX
+        // ===========================
+        async function gerarPix() {
+            const formData = localStorage.getItem('formData');
+            const usuario = formData ? JSON.parse(formData) : null;
+
+            if (!usuario || !usuario.nome || !usuario.email || !usuario.cpf) {
+                alert("Erro: dados do formulário não encontrados. Volte e preencha novamente.");
+                document.getElementById("loading").textContent = "Erro: dados não encontrados.";
+                document.getElementById("loading").style.display = "block";
+                return;
+            }
+
+            document.getElementById("loading").style.display = "block";
+
+            try {
+                const resp = await fetch("/api/generate-pix", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(usuario)
+                });
+
+                // Se as inscrições acabaram
+                if (resp.status === 403) {
+                    const data = await resp.json();
+                    document.body.innerHTML = `
+                        <div class="payment-container">
+                            <h1>Inscrições Esgotadas</h1>
+                            <p style="color:red; font-size:1.3em;">${data.error}</p>
+                        </div>`;
+                    return;
+                }
+
+                if (!resp.ok) {
+                    const errorData = await resp.json().catch(() => ({}));
+                    console.error("Erro Mercado Pago:", errorData);
+                    document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+                    return;
+                }
+
+                const data = await resp.json();
+
+                if (!data.qr_code_base64) {
+                    console.error("QR Code não recebido:", data);
+                    document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+                    return;
+                }
+
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("qrCode").style.display = "block";
+                document.getElementById("qrImg").src = "data:image/png;base64," + data.qr_code_base64;
+                document.getElementById("pixCode").value = data.qr_code;
+
+                verificarPagamento(data.id, usuario);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById("loading").textContent = "Erro ao gerar Pix.";
+            }
+        }
+
+        // ===========================
+        // 🟣 Verificar status do pagamento
+        // ===========================
+        async function verificarPagamento(payment_id, usuario) {
+            const interval = setInterval(async () => {
+                try {
+                    const resp = await fetch(`/api/check-status/${payment_id}`);
+                    const data = await resp.json();
+
+                    if (data.status === "approved") {
+                        clearInterval(interval);
+                        document.getElementById("status").textContent = "🟩 Inscrição realizada com sucesso!";
+
+                        await fetch("/api/send-to-sheet", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(usuario)
+                        });
+
+                        localStorage.removeItem('formData');
+                        checarVagas(); // atualiza vagas disponíveis
+                    } else {
+                        document.getElementById("status").textContent =
+                            `Aguardando pagamento... (${data.status})`;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    document.getElementById("status").textContent = "Erro ao verificar pagamento.";
+                }
+            }, 3000);
+        }
+
+        // ===========================
+        // 📋 Copiar código Pix
+        // ===========================
+        document.getElementById("btnCopiar").addEventListener("click", () => {
+            const pixCode = document.getElementById("pixCode");
+            pixCode.select();
+            pixCode.setSelectionRange(0, 99999);
+            try {
+                document.execCommand("copy");
+                alert("Pix copiado para a área de transferência!");
+            } catch (err) {
+                console.error("Erro ao copiar:", err);
+            }
+        });
+
+        // ===========================
+        // 🚀 Início da página
+        // ===========================
+        (async () => {
+            const podeContinuar = await checarVagas();
+            if (podeContinuar) gerarPix();
+        })();
     </script>
 </body>
 
