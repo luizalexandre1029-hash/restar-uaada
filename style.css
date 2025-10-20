@@ -26,7 +26,7 @@ body {
 }
 
 .data {
-    font-size: 30px;
+    font-size: 40px;
     font-weight: bold;
     margin: 0;
     text-align: center;
@@ -53,6 +53,38 @@ body {
     color: #e7c25e;
     margin: 10px 0 0 0;
     letter-spacing: 3px;
+    text-align: center;
+
+    /* Animação inicial de entrada */
+    animation: entrada 2s ease-out forwards, brilho 2s ease-in-out 2s infinite alternate;
+}
+
+/* Entrada: desliza de cima para posição final */
+@keyframes entrada {
+    0% {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Brilho contínuo */
+@keyframes brilho {
+    0% {
+        text-shadow: 0 0 10px #e7c25e, 0 0 20px #e7c25e, 0 0 30px #ffea70;
+    }
+
+    50% {
+        text-shadow: 0 0 20px #e7c25e, 0 0 30px #ffea70, 0 0 40px #ffe000;
+    }
+
+    100% {
+        text-shadow: 0 0 10px #e7c25e, 0 0 20px #e7c25e, 0 0 30px #ffea70;
+    }
 }
 
 .subtitulo {
