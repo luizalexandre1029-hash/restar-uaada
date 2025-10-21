@@ -1,23 +1,36 @@
-<button id="btn-teste-email">Enviar Email de Teste</button>
-<input type="email" id="email-teste" placeholder="Digite seu email">
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-<script>
-document.getElementById("btn-teste-email").addEventListener("click", async () => {
-    const email = document.getElementById("email-teste").value.trim();
-    if (!email) return alert("Digite um email válido.");
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de Email - UAADA</title>
+</head>
 
-    try {
-        const resp = await fetch("/api/test-email", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
+<body>
+    <h1>Teste de Envio de Email</h1>
+    <input type="email" id="email-teste" placeholder="Digite seu email">
+    <button id="btn-teste-email">Enviar Email de Teste</button>
+
+    <script>
+        document.getElementById("btn-teste-email").addEventListener("click", async () => {
+            const email = document.getElementById("email-teste").value.trim();
+            if (!email) return alert("Digite um email válido.");
+
+            try {
+                const resp = await fetch("/api/test-email", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+                const data = await resp.json();
+                if (resp.ok) alert(data.message);
+                else alert("Erro: " + data.error);
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao enviar email de teste.");
+            }
         });
-        const data = await resp.json();
-        if (resp.ok) alert(data.message);
-        else alert("Erro: " + data.error);
-    } catch (err) {
-        console.error(err);
-        alert("Erro ao enviar email de teste.");
-    }
-});
-</script>
+    </script>
+</body>
+
+</html>
