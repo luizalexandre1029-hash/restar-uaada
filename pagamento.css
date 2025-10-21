@@ -83,10 +83,33 @@ textarea#pixCode {
 }
 
 #status {
+    font-size: 20px;
+    margin-top: 20px;
+    text-align: center;
+    transition: all 0.5s ease-in-out;
+    opacity: 0;
+}
+
+#status.show {
+    opacity: 1;
+    animation: pulse 1.2s infinite;
+    color: #28a745;
+    /* verde sucesso */
     font-weight: bold;
-    margin-top: clamp(10px, 2vw, 15px);
-    font-size: clamp(14px, 3vw, 16px);
-    color: #00b3ff;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* Botão (se precisar de algum) */
