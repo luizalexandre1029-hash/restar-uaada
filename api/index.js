@@ -133,11 +133,11 @@ import path from "path";
 const MERCADO_PAGO_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN;
 const MERCADO_PAGO_API = "https://api.mercadopago.com/v1/payments";
 
-// ===== Limite global =====
+// Limite global de inscrições
 let totalPixRealizados = 0;
 const LIMITE_PIX = 250;
 
-// ===== Configuração do Nodemailer usando variáveis de ambiente =====
+// Configuração do Nodemailer usando variáveis de ambiente
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -146,8 +146,10 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// ===== Função para enviar email HTML com imagem =====
+// Função para enviar email HTML com imagem
 async function enviarEmail(usuario) {
+    if (!usuario.email) return;
+
     const mailOptions = {
         from: process.env.GMAIL_USER,
         to: usuario.email,
@@ -181,7 +183,6 @@ async function enviarEmail(usuario) {
 }
 
 export default async function handler(req, res) {
-    // Permitir CORS
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -195,7 +196,7 @@ export default async function handler(req, res) {
 
     try {
         // =========================
-        // ✅ Gerar PIX
+        // Gerar PIX
         // =========================
         if (url.includes("/generate-pix") && req.method === "POST") {
             if (totalPixRealizados >= LIMITE_PIX) {
@@ -216,7 +217,7 @@ export default async function handler(req, res) {
             const last_name = nomeSplit.slice(1).join(" ") || "-";
 
             const paymentData = {
-                transaction_amount: 0.02,
+                transaction_amount: 10.0, // valor real do Pix
                 description: "Inscrição RESTART",
                 payment_method_id: "pix",
                 payer: {
@@ -255,7 +256,7 @@ export default async function handler(req, res) {
         }
 
         // =========================
-        // ✅ Verificar status do pagamento
+        // Verificar status do pagamento
         // =========================
         if (url.includes("/check-status") && req.method === "GET") {
             const payment_id = url.split("/check-status/")[1];
@@ -265,13 +266,12 @@ export default async function handler(req, res) {
             });
 
             const data = await responseMP.json();
-
             res.status(200).json({ status: data.status });
             return;
         }
 
         // =========================
-        // ✅ Enviar para Google Sheets e enviar email
+        // Enviar para Google Sheets e disparar email
         // =========================
         if (url.includes("/send-to-sheet") && req.method === "POST") {
             const usuario = req.body;
@@ -287,7 +287,7 @@ export default async function handler(req, res) {
             );
             const dataGS = await responseGS.text();
 
-            // Enviar email
+            // Enviar email de confirmação
             await enviarEmail(usuario);
 
             res.status(200).send(dataGS);
@@ -301,4 +301,3 @@ export default async function handler(req, res) {
         res.status(500).json({ error: "Erro no servidor" });
     }
 }
-

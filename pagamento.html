@@ -127,6 +127,36 @@
     <title>Pagamento - RESTART</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/pagamento.css">
+    <style>
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: gold;
+            opacity: 0.8;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10px) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -147,7 +177,22 @@
         <div id="status"></div>
     </div>
 
+    <div id="confetti"></div>
+
     <script>
+        function criarConfete() {
+            const confettiContainer = document.getElementById("confetti");
+            for (let i = 0; i < 100; i++) {
+                const div = document.createElement("div");
+                div.classList.add("confetti-piece");
+                div.style.left = Math.random() * window.innerWidth + "px";
+                div.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                div.style.animationDelay = Math.random() * 3 + "s";
+                div.style.animationDuration = 2 + Math.random() * 3 + "s";
+                confettiContainer.appendChild(div);
+            }
+        }
+
         async function gerarPix() {
             const formData = localStorage.getItem('formData');
             const usuario = formData ? JSON.parse(formData) : null;
@@ -158,6 +203,8 @@
                 document.getElementById("loading").style.display = "block";
                 return;
             }
+
+            console.log("Usuario carregado do localStorage:", usuario);
 
             document.getElementById("loading").style.display = "block";
 
@@ -202,13 +249,16 @@
                     if (data.status === "approved") {
                         clearInterval(interval);
 
+                        // Mostrar mensagem e confete
                         const statusDiv = document.getElementById("status");
                         statusDiv.innerHTML = `
                             🟩 Pagamento aprovado!<br>
-                            ✉️ Email de confirmação enviado com sucesso!
+                            ✉️ Email de confirmação enviado!
                         `;
                         statusDiv.classList.add("show");
+                        criarConfete();
 
+                        // Enviar para Google Sheets e enviar email
                         await fetch("/api/send-to-sheet", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
