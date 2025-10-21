@@ -130,7 +130,7 @@ import { v4 as uuidv4 } from "uuid";
 import nodemailer from "nodemailer";
 import path from "path";
 
-const MERCADO_PAGO_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-2703539769101891-101913-92def06cfd2c7a6fea465c1eeae4150c-702338274";
+const MERCADO_PAGO_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN;
 const MERCADO_PAGO_API = "https://api.mercadopago.com/v1/payments";
 
 // ===== Limite global =====
@@ -146,7 +146,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// ===== Função para enviar email HTML =====
+// ===== Função para enviar email HTML com imagem =====
 async function enviarEmail(usuario) {
     const mailOptions = {
         from: process.env.GMAIL_USER,
@@ -154,7 +154,7 @@ async function enviarEmail(usuario) {
         subject: "Inscrição RESTART Confirmada!",
         html: `
             <div style="font-family: 'Montserrat', sans-serif; line-height: 1.5; color: #333;">
-                <p>✨ Olá ${usuario.nome} Sua inscrição na Conferência Restart está confirmada! Prepare-se para viver algo novo!</p>
+                <p>✨ Sua inscrição na Conferência Restart está confirmada! Prepare-se para viver algo novo!</p>
                 
                 <img src="cid:mensagemIMG" alt="Mensagem" style="max-width: 100%; height: auto; margin: 20px 0;" />
 
@@ -166,7 +166,7 @@ async function enviarEmail(usuario) {
         attachments: [
             {
                 filename: "mensagem.jpg",
-                path: path.join(process.cwd(), "mensagem.jpg"), // raiz do projeto
+                path: path.join(process.cwd(), "mensagem.jpg"),
                 cid: "mensagemIMG"
             }
         ]
@@ -216,7 +216,7 @@ export default async function handler(req, res) {
             const last_name = nomeSplit.slice(1).join(" ") || "-";
 
             const paymentData = {
-                transaction_amount: 0.02,
+                transaction_amount: 10.0,
                 description: "Inscrição RESTART",
                 payment_method_id: "pix",
                 payer: {
@@ -271,7 +271,7 @@ export default async function handler(req, res) {
         }
 
         // =========================
-        // ✅ Enviar para Google Sheets e enviar email quando aprovado
+        // ✅ Enviar para Google Sheets e enviar email
         // =========================
         if (url.includes("/send-to-sheet") && req.method === "POST") {
             const usuario = req.body;
@@ -301,3 +301,4 @@ export default async function handler(req, res) {
         res.status(500).json({ error: "Erro no servidor" });
     }
 }
+
