@@ -1,0 +1,23 @@
+<button id="btn-teste-email">Enviar Email de Teste</button>
+<input type="email" id="email-teste" placeholder="Digite seu email">
+
+<script>
+document.getElementById("btn-teste-email").addEventListener("click", async () => {
+    const email = document.getElementById("email-teste").value.trim();
+    if (!email) return alert("Digite um email válido.");
+
+    try {
+        const resp = await fetch("/api/test-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
+        const data = await resp.json();
+        if (resp.ok) alert(data.message);
+        else alert("Erro: " + data.error);
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao enviar email de teste.");
+    }
+});
+</script>
