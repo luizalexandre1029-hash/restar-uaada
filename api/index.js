@@ -217,7 +217,7 @@ export default async function handler(req, res) {
             const last_name = nomeSplit.slice(1).join(" ") || "-";
 
             const paymentData = {
-                transaction_amount: 10.0, // valor real do Pix
+                transaction_amount: 0.02, // valor real do Pix
                 description: "Inscrição RESTART",
                 payment_method_id: "pix",
                 payer: {
